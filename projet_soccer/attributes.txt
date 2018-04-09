@@ -1,0 +1,322 @@
+Teams:
+
+id,
+team_api_id,
+team_fifa_api_id,
+team_long_name,
+team_short_name
+
+******************************************
+Teamattributes:
+
+id,
+team_fifa_api_id,
+team_api_id,
+date,
+buildUpPlaySpeed,
+buildUpPlaySpeedClass,
+buildUpPlayDribbling,
+buildUpPlayDribblingClass,
+buildUpPlayPassing,
+buildUpPlayPassingClass,
+buildUpPlayPositioningClass,
+chanceCreationPassing,
+chanceCreationPassingClass,
+chanceCreationCrossing,
+chanceCreationCrossingClass,
+chanceCreationShooting,
+chanceCreationShootingClass,
+chanceCreationPositioningClass,
+defencePressure,
+defencePressureClass,
+defenceAggression,
+defenceAggressionClass,
+defenceTeamWidth,
+defenceTeamWidthClass,
+defenceDefenderLineClass
+
+*******************************************
+Country:
+
+id,
+name
+
+*******************************************
+League:
+
+id,
+country_id,
+name
+
+********************************************
+Match:
+
+id,
+country_id,
+league_id,
+season,
+stage,
+date,
+match_api_id,
+home_team_api_id,
+away_team_api_id,
+home_team_goal,
+away_team_goal,
+
+Position des joueurs en X****
+home_player_X1,
+home_player_X2,
+home_player_X3,
+home_player_X4,
+home_player_X5,
+home_player_X6,
+home_player_X7,
+home_player_X8,
+home_player_X9,
+home_player_X10,
+home_player_X11,
+away_player_X1,
+away_player_X2,
+away_player_X3,
+away_player_X4,
+away_player_X5,
+away_player_X6,
+away_player_X7,
+away_player_X8,
+away_player_X9,
+away_player_X10,
+away_player_X11,
+
+Position des joueurs en Y****
+home_player_Y1,
+home_player_Y2,
+home_player_Y3,
+home_player_Y4,
+home_player_Y5,
+home_player_Y6,
+home_player_Y7,
+home_player_Y8,
+home_player_Y9,
+home_player_Y10,
+home_player_Y11,
+away_player_Y1,
+away_player_Y2,
+away_player_Y3,
+away_player_Y4,
+away_player_Y5,
+away_player_Y6,
+away_player_Y7,
+away_player_Y8,
+away_player_Y9,
+away_player_Y10,
+away_player_Y11,
+
+id des joueurs****
+home_player_1,
+home_player_2,
+home_player_3,
+home_player_4,
+home_player_5,
+home_player_6,
+home_player_7,
+home_player_8,
+home_player_9,
+home_player_10,
+home_player_11,
+away_player_1,
+away_player_2,
+away_player_3,
+away_player_4,
+away_player_5,
+away_player_6,
+away_player_7,
+away_player_8,
+away_player_9,
+away_player_10,
+away_player_11,
+
+goal,
+shoton,
+shotoff,
+foulcommit,
+card,
+cross,
+corner,
+possession,
+
+B365H,
+B365D,
+B365A,
+BWH,
+BWD,
+BWA,
+IWH,
+IWD,
+IWA,
+LBH,
+LBD,
+LBA,
+PSH,
+PSD,
+PSA,
+WHH,
+WHD,
+WHA,
+SJH,
+SJD,
+SJA,
+VCH,
+VCD,
+VCA,
+GBH,
+GBD,
+GBA,
+BSH,
+BSD,
+BSA
+
+
+
+
+
+********************************************
+Player:
+
+
+id,
+player_api_id,
+player_name,
+player_fifa_api_id,
+birthday,
+height,
+weight
+
+
+*******************************************
+Playerattributes:
+
+
+id,
+player_fifa_api_id,
+player_api_id,
+date,
+overall_rating,
+potential,
+preferred_foot,
+attacking_work_rate,
+defensive_work_rate,
+crossing,
+finishing,
+heading_accuracy,
+short_passing,
+volleys,
+dribbling,
+curve,
+free_kick_accuracy,
+long_passing,
+ball_control,
+acceleration,
+sprint_speed,
+agility,
+reactions,
+balance,
+shot_power,
+jumping,
+stamina,
+strength,
+long_shots,
+aggression,
+interceptions,
+positioning,
+vision,
+penalties,
+marking,
+standing_tackle,
+sliding_tackle,
+gk_diving,
+gk_handling,
+gk_kicking,
+gk_positioning,
+gk_reflexes
+
+
+
+
+
+B365H = Bet365 home win odds
+B365D = Bet365 draw odds
+B365A = Bet365 away win odds
+BSH = Blue Square home win odds
+BSD = Blue Square draw odds
+BSA = Blue Square away win odds
+BWH = Bet&Win home win odds
+BWD = Bet&Win draw odds
+BWA = Bet&Win away win odds
+GBH = Gamebookers home win odds
+GBD = Gamebookers draw odds
+GBA = Gamebookers away win odds
+IWH = Interwetten home win odds
+IWD = Interwetten draw odds
+IWA = Interwetten away win odds
+LBH = Ladbrokes home win odds
+LBD = Ladbrokes draw odds
+LBA = Ladbrokes away win odds
+PSH and PH = Pinnacle home win odds
+PSD and PD = Pinnacle draw odds
+PSA and PA = Pinnacle away win odds
+SOH = Sporting Odds home win odds
+SOD = Sporting Odds draw odds
+SOA = Sporting Odds away win odds
+SBH = Sportingbet home win odds
+SBD = Sportingbet draw odds
+SBA = Sportingbet away win odds
+SJH = Stan James home win odds
+SJD = Stan James draw odds
+SJA = Stan James away win odds
+SYH = Stanleybet home win odds
+SYD = Stanleybet draw odds
+SYA = Stanleybet away win odds
+VCH = VC Bet home win odds
+VCD = VC Bet draw odds
+VCA = VC Bet away win odds
+WHH = William Hill home win odds
+WHD = William Hill draw odds
+WHA = William Hill away win odds
+
+
+Div = League Division
+Date = Match Date (dd/mm/yy)
+HomeTeam = Home Team
+AwayTeam = Away Team
+FTHG and HG = Full Time Home Team Goals
+FTAG and AG = Full Time Away Team Goals
+FTR and Res = Full Time Result (H=Home Win, D=Draw, A=Away Win)
+HTHG = Half Time Home Team Goals
+HTAG = Half Time Away Team Goals
+HTR = Half Time Result (H=Home Win, D=Draw, A=Away Win)
+
+
+Match Statistics (where available)
+Attendance = Crowd Attendance
+Referee = Match Referee
+HS = Home Team Shots
+AS = Away Team Shots
+HST = Home Team Shots on Target
+AST = Away Team Shots on Target
+HHW = Home Team Hit Woodwork
+AHW = Away Team Hit Woodwork
+HC = Home Team Corners
+AC = Away Team Corners
+HF = Home Team Fouls Committed
+AF = Away Team Fouls Committed
+HFKC = Home Team Free Kicks Conceded
+AFKC = Away Team Free Kicks Conceded
+HO = Home Team Offsides
+AO = Away Team Offsides
+HY = Home Team Yellow Cards
+AY = Away Team Yellow Cards
+HR = Home Team Red Cards
+AR = Away Team Red Cards
+HBP = Home Team Bookings Points (10 = yellow, 25 = red)
+ABP = Away Team Bookings Points (10 = yellow, 25 = red)
+

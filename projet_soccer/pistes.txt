@@ -1,0 +1,8 @@
+Reflexion sur le choix d'analyse des données fifa:
+
+-Apprentissage statistique sur les données des matchs de chaque équipe pour déterminer un ratio de victoire/defaite
+-Confronter les données des attributs des équipes entre elles pour déterminer la gagant d'un match potientiel
+-Determiner les qualités d'une équipe qui gagne avec les données des matchs et les données dominantes des attributs des équipes 
+-Regrouper les équipes par qualités prédominante en apprentissage non supervisée à l'aide de cluster
+-Determiner un lien entre la cote des équipes aux paris sportifs et leurs victoires
+
