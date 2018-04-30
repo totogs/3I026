@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# ------------------------------------------------
-# package IADS2018
-# UE 3I026 "IA et Data Science" -- 2017-2018
-#
-# Module kmoyennes.py:
-# Fonctions pour le clustering
-# ------------------------------------------------
 
 # Importations nécessaires pour l'ensemble des fonctions de ce fichier:
 import pandas as pd
