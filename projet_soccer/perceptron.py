@@ -61,7 +61,7 @@ class Classifier:
     def accuracy(self, dataset):
         nb_ok = 0
         for i in range(dataset.size()):
-            output = self.predict(dataset.getX(i))
+            output, acc = self.predict(dataset.getX(i))
             if (output * dataset.getY(i) > 0):
                 nb_ok = nb_ok + 1
         acc = nb_ok / (dataset.size() * 1.0)
@@ -88,8 +88,8 @@ class Perceptron(Classifier):
         for i in range(self.nbr_it):
             
             for j in ls:
-                
-                if(self.labeledset.getY(j)*self.predict(self.labeledset.getX(j))<0):
+                vote,acc_plus = self.predict(self.labeledset.getX(j))
+                if(self.labeledset.getY(j)*vote<0):
                     
                     self.w = self.w + self.lg_rate*self.labeledset.getY(j)*np.hstack((self.labeledset.getX(j),[-1]))
 
@@ -107,8 +107,8 @@ class Perceptron(Classifier):
         scalar = np.dot(self.w, np.hstack((x,[-1])))
 
         if(scalar >= 0):
-            return 1     
-        return -1
+            return 1, 0     
+        return -1, 0
         
 
 
@@ -162,12 +162,18 @@ class ClassifierBaggingPerceptron(Classifier):
         
     def predict(self, x):
         vote = 0
+        nb_plus = 0
+
         for perc in self.listPerceptrons:
-            vote += perc.predict(x)
+            pred, acc_plus = perc.predict(x)
+            vote += pred
+            if(pred>0):
+                nb_plus+=1
+
         
         if vote >= 0:
-            return +1
-        return -1
+            return +1,  nb_plus/(len(self.listPerceptrons)*1.0)
+        return -1,  nb_plus/(len(self.listPerceptrons)*1.0)
     
     def outOfBagsError(self):
         """Retourne une estimation de l'erreur du classifieur par la méthode Out Of Bags"""
@@ -181,8 +187,9 @@ class ClassifierBaggingPerceptron(Classifier):
             #Faire une prediction sur ces perceptrons
             vote = 0
             for perc in oobPerceptrons:
-                vote += perc.predict(xi)
-            
+                v, acc_plus = perc.predict(xi)
+                vote+=v
+
             if vote * yi < 0: #mauvais résultat
                 nb_ko += 1
                
@@ -210,14 +217,18 @@ class KNN(Classifier):
          
         distances.sort()
         score=0
-        
+
         for i in range(0,self.k):
             if(distances[i][1]==1):
                 score+=1
             else:
                 score-=1
-                
-        return score
+
+        if(score>=0):
+            return 1, 0
+        else:
+            return -1, 0
+
         
     def train(self, labeledset):
         self.labeledset=labeledset
@@ -245,7 +256,7 @@ class ClassifierBaggingKNN(Classifier):
         for i in range(0, self.nbknn):
             
             sample = echantillonLS(labeledset, m, self.r)
-            t = KNN(self.input_dimension, 5)
+            t=KNN(self.input_dimension, 3)
             t.train(sample)
             listKnns.append(t)
             
@@ -254,12 +265,18 @@ class ClassifierBaggingKNN(Classifier):
         
     def predict(self, x):
         vote = 0
+        nb_plus = 0
+
         for knn in self.listKnns:
-            vote += knn.predict(x)
-        
+            pred, acc_plus = knn.predict(x)
+            vote += pred
+            if(pred>0):
+                nb_plus+=1
+
+
         if vote >= 0:
-            return +1
-        return -1
+            return 1, nb_plus/(len(self.listKnns)*1.0)
+        return -1, nb_plus/(len(self.listKnns)*1.0)
     
     def outOfBagsError(self):
         """Retourne une estimation de l'erreur du classifieur par la méthode Out Of Bags"""
@@ -273,9 +290,45 @@ class ClassifierBaggingKNN(Classifier):
             #Faire une prediction sur ces perceptrons
             vote = 0
             for knn in oobKnns:
-                vote += knn.predict(xi)
+                v, acc_plus = knn.predict(xi)
+                vote+=v
             
             if vote * yi < 0: #mauvais résultat
                 nb_ko += 1
                
         return nb_ko / (self.labeledset.size()* 1.0)
+
+
+
+class ClassifierMatch(Classifier):
+
+    def __init__(self, input_dimension, error):
+
+        self.input_dimension = input_dimension
+        self.error=error
+        self.baggKNN=None
+        self.baggPerc=None
+        
+    def train(self, labeledset):
+        
+
+
+        self.baggKNN=ClassifierBaggingKNN(self.input_dimension, 30,0.2,True)
+        self.baggPerc=ClassifierBaggingPerceptron(self.input_dimension, 30, 0.2, True)
+
+        self.baggKNN.train(labeledset)
+        self.baggPerc.train(labeledset)
+        
+    def predict(self, x, home_team_name, away_team_name):
+        
+        voteKNN, acc_KNN = self.baggKNN.predict(x)
+        votePerc, acc_Perc = self.baggPerc.predict(x)
+
+        acc_plus=(acc_KNN+acc_Perc)/2.0
+
+        if(acc_plus<(0.5-self.error)):
+            return -1,str(away_team_name)+" win with "+str(1.0-acc_plus)+" of chance !"
+        elif(acc_plus>(0.5+self.error)):
+            return 1,str(home_team_name)+" win with "+str(acc_plus)+" of chance !"
+        else:
+            return 0,"Draw !"
