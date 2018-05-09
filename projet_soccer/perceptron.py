@@ -61,8 +61,9 @@ class Classifier:
     def accuracy(self, dataset):
         nb_ok = 0
         for i in range(dataset.size()):
-            output, acc = self.predict(dataset.getX(i))
-            if (output * dataset.getY(i) > 0):
+            output = self.predict(dataset.getX(i))
+
+            if (output == dataset.getY(i)):
                 nb_ok = nb_ok + 1
         acc = nb_ok / (dataset.size() * 1.0)
         return acc
@@ -80,26 +81,18 @@ class Perceptron(Classifier):
     def train(self, labeledset):
         
         self.labeledset=labeledset
-        list_acc=[]
-        list_it=[]
+
         ls=np.arange(labeledset.size())
         np.random.shuffle(ls)
         
         for i in range(self.nbr_it):
             
             for j in ls:
-                vote,acc_plus = self.predict(self.labeledset.getX(j))
+                vote = self.predict(self.labeledset.getX(j))
                 if(self.labeledset.getY(j)*vote<0):
                     
                     self.w = self.w + self.lg_rate*self.labeledset.getY(j)*np.hstack((self.labeledset.getX(j),[-1]))
 
-            
-            if(i%10==0):
-                list_acc.append(self.accuracy(self.labeledset))
-                list_it.append(i)
-                
-        plt.subplot(121)
-        plt.plot(list_it,list_acc)
     
         
     def predict(self, x):
@@ -107,8 +100,8 @@ class Perceptron(Classifier):
         scalar = np.dot(self.w, np.hstack((x,[-1])))
 
         if(scalar >= 0):
-            return 1, 0     
-        return -1, 0
+            return 1   
+        return -1
         
 
 
@@ -165,15 +158,17 @@ class ClassifierBaggingPerceptron(Classifier):
         nb_plus = 0
 
         for perc in self.listPerceptrons:
-            pred, acc_plus = perc.predict(x)
+            pred = perc.predict(x)
             vote += pred
             if(pred>0):
                 nb_plus+=1
 
-        
+        self.acc_home=nb_plus/(len(self.listPerceptrons)*1.0)
+        self.acc_away=1.0-self.acc_home
+
         if vote >= 0:
-            return +1,  nb_plus/(len(self.listPerceptrons)*1.0)
-        return -1,  nb_plus/(len(self.listPerceptrons)*1.0)
+            return +1
+        return -1
     
     def outOfBagsError(self):
         """Retourne une estimation de l'erreur du classifieur par la méthode Out Of Bags"""
@@ -187,10 +182,10 @@ class ClassifierBaggingPerceptron(Classifier):
             #Faire une prediction sur ces perceptrons
             vote = 0
             for perc in oobPerceptrons:
-                v, acc_plus = perc.predict(xi)
+                v= perc.predict(xi)
                 vote+=v
 
-            if vote * yi < 0: #mauvais résultat
+            if vote == yi < 0: #mauvais résultat
                 nb_ko += 1
                
         return nb_ko / (self.labeledset.size()* 1.0)
@@ -217,17 +212,28 @@ class KNN(Classifier):
          
         distances.sort()
         score=0
+        nb_home=0
+        nb_away=0
+        nb_draw=0
 
         for i in range(0,self.k):
             if(distances[i][1]==1):
-                score+=1
+                nb_home+=1
+            elif(distances[i][1]==-1):
+                nb_away+=1
             else:
-                score-=1
+                nb_draw+=1
 
-        if(score>=0):
-            return 1, 0
+        self.acc_home=nb_home/(self.k*1.0)
+        self.acc_away=nb_away/(self.k*1.0)
+        self.acc_draw=nb_draw/(self.k*1.0)
+
+        if(nb_home>nb_away and nb_home>nb_draw):
+            return 1
+        if(nb_away>nb_home and nb_away>nb_draw):
+            return -1
         else:
-            return -1, 0
+            return 0
 
         
     def train(self, labeledset):
@@ -256,7 +262,7 @@ class ClassifierBaggingKNN(Classifier):
         for i in range(0, self.nbknn):
             
             sample = echantillonLS(labeledset, m, self.r)
-            t=KNN(self.input_dimension, 3)
+            t=KNN(self.input_dimension, 10)
             t.train(sample)
             listKnns.append(t)
             
@@ -264,19 +270,29 @@ class ClassifierBaggingKNN(Classifier):
         self.labeledset = labeledset
         
     def predict(self, x):
-        vote = 0
-        nb_plus = 0
+
+        nb_home=0
+        nb_away=0
+        nb_draw=0
 
         for knn in self.listKnns:
-            pred, acc_plus = knn.predict(x)
-            vote += pred
-            if(pred>0):
-                nb_plus+=1
+            pred = knn.predict(x)
+            nb_home+=knn.acc_home
+            nb_away+=knn.acc_away
+            nb_draw+=knn.acc_draw
+
+        self.acc_home=nb_home/(len(self.listKnns)*1.0)#Calcul du pourcentage de vote pour que l'equipe à domicile gagne
+        self.acc_away=nb_away/(len(self.listKnns)*1.0)#Calcul du pourcentage de vote pour que l'equipe en extérieur gagne
+        self.acc_draw=nb_draw/(len(self.listKnns)*1.0)#Calcul du pourcentage de vote pour un match nul
+
+        if(nb_home>nb_away and nb_home>nb_draw):
+            return 1
+        if(nb_away>nb_home and nb_away>nb_draw):
+            return -1
+        else:
+            return 0
 
 
-        if vote >= 0:
-            return 1, nb_plus/(len(self.listKnns)*1.0)
-        return -1, nb_plus/(len(self.listKnns)*1.0)
     
     def outOfBagsError(self):
         """Retourne une estimation de l'erreur du classifieur par la méthode Out Of Bags"""
@@ -287,14 +303,25 @@ class ClassifierBaggingKNN(Classifier):
             xi, yi = self.labeledset.getX(i), self.labeledset.getY(i)
             oobKnns = [knn for knn in self.listKnns if xi not in knn.labeledset.x]
             
-            #Faire une prediction sur ces perceptrons
-            vote = 0
+            #Faire une prediction sur ces knn
+            nb_home=0
+            nb_away=0
+            nb_draw=0
             for knn in oobKnns:
-                v, acc_plus = knn.predict(xi)
-                vote+=v
+                v = knn.predict(xi)
+                nb_home+=knn.acc_home
+                nb_away+=knn.acc_away
+                nb_draw+=knn.acc_draw
             
-            if vote * yi < 0: #mauvais résultat
-                nb_ko += 1
+            if(nb_home>nb_away and nb_home>nb_draw):
+                if(yi!=1):
+                    nb_ko+=1
+            if(nb_away>nb_home and nb_away>nb_draw):
+                if(yi!=-1):
+                    nb_ko+=1
+            else:
+                if(yi!=0):
+                    nb_ko+=1
                
         return nb_ko / (self.labeledset.size()* 1.0)
 
@@ -302,10 +329,9 @@ class ClassifierBaggingKNN(Classifier):
 
 class ClassifierMatch(Classifier):
 
-    def __init__(self, input_dimension, error):
+    def __init__(self, input_dimension):
 
         self.input_dimension = input_dimension
-        self.error=error
         self.baggKNN=None
         self.baggPerc=None
         
@@ -313,22 +339,33 @@ class ClassifierMatch(Classifier):
         
 
 
-        self.baggKNN=ClassifierBaggingKNN(self.input_dimension, 30,0.2,True)
-        self.baggPerc=ClassifierBaggingPerceptron(self.input_dimension, 30, 0.2, True)
+        self.baggKNN=ClassifierBaggingKNN(self.input_dimension, 30,0.3,True)
+        self.baggPerc=ClassifierBaggingPerceptron(self.input_dimension, 30, 0.3, True)
 
         self.baggKNN.train(labeledset)
         self.baggPerc.train(labeledset)
         
-    def predict(self, x, home_team_name, away_team_name):
+    def predict(self, x, home_team_name="home", away_team_name="away"):
         
-        voteKNN, acc_KNN = self.baggKNN.predict(x)
-        votePerc, acc_Perc = self.baggPerc.predict(x)
+        voteKNN = self.baggKNN.predict(x)
+        votePerc = self.baggPerc.predict(x)
 
-        acc_plus=(acc_KNN+acc_Perc)/2.0
+        #pourcentage de chance que l'équipe à domicile gagne
+        self.acc_home=(self.baggKNN.acc_home+self.baggPerc.acc_home)/2
+        #pourcentage de chance que l'équipe en exterieur gagne
+        self.acc_away=(self.baggKNN.acc_away+self.baggPerc.acc_away)/2
+        #pourcentage de chance qu'il y ait un match nul
+        self.acc_draw=1-(self.acc_home+self.acc_away)
 
-        if(acc_plus<(0.5-self.error)):
-            return -1,str(away_team_name)+" win with "+str(1.0-acc_plus)+" of chance !"
-        elif(acc_plus>(0.5+self.error)):
-            return 1,str(home_team_name)+" win with "+str(acc_plus)+" of chance !"
+        #Si le pourcentage de chance que l'equipe en extérieur gagne est supérieur aux autres on renvoit -1
+        if(self.acc_away>self.acc_home and self.acc_away>self.acc_draw):
+            print(str(away_team_name)+" win vs "+str(home_team_name)+" (home win chance: "+str(self.acc_home)+", away win chance: "+str(self.acc_away)+", draw chance:"+str(self.acc_draw)+")")
+            return -1
+        #Si le pourcentage de chance que l'equipe à domicile gagne est supérieur aux autres on renvoit 1
+        elif(self.acc_home>self.acc_away and self.acc_home>self.acc_draw):
+            print(str(home_team_name)+" win vs "+str(away_team_name)+" (home win chance: "+str(self.acc_home)+", away win chance: "+str(self.acc_away)+", draw chance:"+str(self.acc_draw)+")")
+            return 1
+        #Si le pourcentage de chance qu'il y ait un match nul est supérieur aux autres on renvoit 0
         else:
-            return 0,"Draw !"
+            print( "Draw !  (home win chance: "+str(self.acc_home)+", away win chance: "+str(self.acc_away)+", draw chance: "+str(self.acc_draw)+")")
+            return 0
